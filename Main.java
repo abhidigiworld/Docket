@@ -4,6 +4,15 @@ import java.util.Scanner;
 import java.time.LocalTime;
 import java.time.Period;
 class Scheduler{
+    static LocalTime startTime;
+    static LocalTime endTimer;
+
+    public static void timeAssign(String startTimeString, String endTimeString) {
+          // Parse the user input into a LocalTime object
+          startTime = LocalTime.parse(startTimeString);
+          endTimer = LocalTime.parse(endTimeString);
+    }
+
     public static void generateStudySchedule(int restTime, int topicTime, int maxFocusTime, String[] topics, String endDateStr) {
         // Parse the end date input
         LocalDate endDate = LocalDate.parse(endDateStr, DateTimeFormatter.ISO_DATE);
@@ -11,7 +20,6 @@ class Scheduler{
         // Calculate the total time required to cover all the topics
         int session=topicTime/maxFocusTime;
         int totalTime = ((topics.length * topicTime)+((session-1)*restTime*topics.length))+ ((topics.length-1)*restTime);
-        System.out.println(totalTime);
         // Get the current day
         LocalDate startDate = LocalDate.now();
 
@@ -28,24 +36,23 @@ class Scheduler{
             // Calculate the study schedule
             int minutesRemaining = totalTime;
             LocalDate currentDate = startDate;
-            LocalTime currentTime = LocalTime.of(8, 0);
+            LocalTime currentTime = startTime;
             System.out.println("Study Schedule:");
             System.out.println("Date\t\tStart Time\tEnd Time\tTopic");
             for (String topic : topics) {
                 if(topicTime > maxFocusTime){
                     int sessions=topicTime/maxFocusTime;
-                    for(int i=sessions;sessions!=0;sessions--){
+                    for(int i=sessions;i!=0;i--){
                         
                 // Calculate the time required to cover the current topic
-                int topicMinutes = Math.min(maxFocusTime, minutesRemaining);
-
+                int topicMinutes = Math.min(maxFocusTime, Math.min(topicTime, minutesRemaining ));
                 // Calculate the end time for the current topic
                 LocalTime endTime = currentTime.plusMinutes(topicMinutes);
 
                 // If the end time is after the end of the study day, skip to the next day
-                if (endTime.isAfter(LocalTime.of(18, 0))) {
+                if (endTime.isAfter(endTimer)) {
                     currentDate = currentDate.plusDays(1);
-                    currentTime = LocalTime.of(8, 0);
+                    currentTime = startTime;
                     endTime = currentTime.plusMinutes(topicMinutes);
                 }
 
@@ -59,7 +66,7 @@ class Scheduler{
                 }
                 else{
                 // Calculate the time required to cover the current topic
-                int topicMinutes = Math.min(maxFocusTime, minutesRemaining);
+                int topicMinutes = Math.min(maxFocusTime, Math.min(topicTime, minutesRemaining ));
 
                 // Calculate the end time for the current topic
                 LocalTime endTime = currentTime.plusMinutes(topicMinutes);
@@ -104,7 +111,10 @@ public class Docket{
         }  
 
         String topics[]=userInput.split(",");
-
+        System.out.print("Enter the start time of the event in 24-hour format (e.g. 08:00): ");
+            String startTimeString = scanner.nextLine();
+        System.out.print("Enter the end time of the event in 24-hour format (e.g. 18:00): ");
+            String endTimeString = scanner.nextLine();
         System.out.print("Enter maximum focus time (in minutes): ");
             int maxFocusTime = scanner.nextInt();
             
@@ -116,8 +126,8 @@ public class Docket{
             
         System.out.print("Enter end date (in yyyy-mm-dd format): ");
             String endDateStr = scanner.next();
-            LocalDate endDate = LocalDate.parse(endDateStr, DateTimeFormatter.ISO_DATE);
         scanner.close();
+        Scheduler.timeAssign(startTimeString, endTimeString);
         Scheduler.generateStudySchedule(restTime, topicTime, maxFocusTime, topics, endDateStr);
     }
 }
