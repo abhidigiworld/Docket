@@ -32,6 +32,10 @@ class Scheduler{
             System.out.println("Study Schedule:");
             System.out.println("Date\t\tStart Time\tEnd Time\tTopic");
             for (String topic : topics) {
+                if(topicTime > maxFocusTime){
+                    int sessions=topicTime/maxFocusTime;
+                    for(int i=sessions;sessions!=0;sessions--){
+                        
                 // Calculate the time required to cover the current topic
                 int topicMinutes = Math.min(maxFocusTime, minutesRemaining);
 
@@ -51,12 +55,36 @@ class Scheduler{
                 minutesRemaining -= topicMinutes;
                 currentTime = endTime.plusMinutes(restTime);
                 System.out.println(currentDate + "\t" + endTime + "\t\t" + currentTime + "\t\t" + "Break Time");
+                    }
+                }
+                else{
+                // Calculate the time required to cover the current topic
+                int topicMinutes = Math.min(maxFocusTime, minutesRemaining);
+
+                // Calculate the end time for the current topic
+                LocalTime endTime = currentTime.plusMinutes(topicMinutes);
+
+                // If the end time is after the end of the study day, skip to the next day
+                if (endTime.isAfter(LocalTime.of(18, 0))) {
+                    currentDate = currentDate.plusDays(1);
+                    currentTime = LocalTime.of(8, 0);
+                    endTime = currentTime.plusMinutes(topicMinutes);
+                }
+
+                // Print the study schedule for the current topic
+                System.out.println(currentDate + "\t" + currentTime + "\t\t" + endTime + "\t\t" + topic.trim());
+                // Update the remaining minutes and current time
+                minutesRemaining -= topicMinutes;
+                currentTime = endTime.plusMinutes(restTime);
+                System.out.println(currentDate + "\t" + endTime + "\t\t" + currentTime + "\t\t" + "Break Time");
+                }
 
                 // If there are no more minutes remaining, break out of the loop
                 if (minutesRemaining == 0) {
                     break;
                 }
             }
+            System.out.println("Success is the sum of small efforts, repeated day in and day out.");
         }
     }
 }
