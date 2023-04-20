@@ -1,33 +1,95 @@
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Scanner;
+import java.time.LocalTime;
+import java.time.Period;
+class Scheduler{
+    public static void generateStudySchedule(int restTime, int topicTime, int maxFocusTime, String[] topics, String endDateStr) {
+        // Parse the end date input
+        LocalDate endDate = LocalDate.parse(endDateStr, DateTimeFormatter.ISO_DATE);
 
-import javax.swing.JButton;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
+        // Calculate the total time required to cover all the topics
+        int session=topicTime/maxFocusTime;
+        int totalTime = ((topics.length * topicTime)+((session-1)*restTime*topics.length))+ ((topics.length-1)*restTime);
+        System.out.println(totalTime);
+        // Get the current day
+        LocalDate startDate = LocalDate.now();
 
-public class Main {
-  public static void main(String[] args) {
-    JFrame frame = new JFrame("PDF Uploader");
-    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-    JPanel panel = new JPanel();
-    JButton button = new JButton("Choose PDF");
-    button.addActionListener(new ActionListener() {
-      @Override
-      public void actionPerformed(ActionEvent e) {
-        JFileChooser fileChooser = new JFileChooser();
-        fileChooser.setCurrentDirectory(new File(System.getProperty("user.home")));
-        int result = fileChooser.showOpenDialog(frame);
-        if (result == JFileChooser.APPROVE_OPTION) {
-          File selectedFile = fileChooser.getSelectedFile();
-          System.out.println("Selected PDF: " + selectedFile.getAbsolutePath());
+        // Calculate the total study time available
+        Period period = Period.between(startDate, endDate);
+        int totalStudyTime = period.getDays()*24*60;
+
+        // Check if there is enough time to cover all the topics
+        if (totalTime > totalStudyTime) {
+            System.out.println("There is not enough time to cover all the topics.");
+            System.out.println("Consider reducing topic time or increasing focus time.");
+        } 
+        else {
+            // Calculate the study schedule
+            int minutesRemaining = totalTime;
+            LocalDate currentDate = startDate;
+            LocalTime currentTime = LocalTime.of(8, 0);
+            System.out.println("Study Schedule:");
+            System.out.println("Date\t\tStart Time\tEnd Time\tTopic");
+            for (String topic : topics) {
+                // Calculate the time required to cover the current topic
+                int topicMinutes = Math.min(maxFocusTime, minutesRemaining);
+
+                // Calculate the end time for the current topic
+                LocalTime endTime = currentTime.plusMinutes(topicMinutes);
+
+                // If the end time is after the end of the study day, skip to the next day
+                if (endTime.isAfter(LocalTime.of(18, 0))) {
+                    currentDate = currentDate.plusDays(1);
+                    currentTime = LocalTime.of(8, 0);
+                    endTime = currentTime.plusMinutes(topicMinutes);
+                }
+
+                // Print the study schedule for the current topic
+                System.out.println(currentDate + "\t" + currentTime + "\t\t" + endTime + "\t\t" + topic.trim());
+                // Update the remaining minutes and current time
+                minutesRemaining -= topicMinutes;
+                currentTime = endTime.plusMinutes(restTime);
+                System.out.println(currentDate + "\t" + endTime + "\t\t" + currentTime + "\t\t" + "Break Time");
+
+                // If there are no more minutes remaining, break out of the loop
+                if (minutesRemaining == 0) {
+                    break;
+                }
+            }
         }
-      }
-    });
-    panel.add(button);
-    frame.add(panel);
-    frame.pack();
-    frame.setVisible(true);
-  }
+    }
+}
+public class Docket{
+    public static void main(String[] args) {
+    // Get input from user
+        Scanner scanner = new Scanner(System.in);
+        String userInput = "";
+        String exitKeyword = "$done";
+        System.out.println("Enter the topic serprated by (,) comma (or type '$done' to exit): ");
+        while (true) {
+            String inputLine = scanner.nextLine();
+            if (inputLine.equals(exitKeyword)) {
+        break;
+        }
+        userInput += inputLine.toUpperCase();
+        }  
+
+        String topics[]=userInput.split(",");
+
+        System.out.print("Enter maximum focus time (in minutes): ");
+            int maxFocusTime = scanner.nextInt();
+            
+        System.out.print("Enter time required to cover one topic (in minutes): ");
+            int topicTime = scanner.nextInt();
+        
+        System.out.print("Enter time needed for rest (in minutes): ");
+            int restTime = scanner.nextInt();
+            
+        System.out.print("Enter end date (in yyyy-mm-dd format): ");
+            String endDateStr = scanner.next();
+            LocalDate endDate = LocalDate.parse(endDateStr, DateTimeFormatter.ISO_DATE);
+        scanner.close();
+        Scheduler.generateStudySchedule(restTime, topicTime, maxFocusTime, topics, endDateStr);
+    }
 }
