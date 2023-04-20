@@ -131,3 +131,18 @@ public class Docket{
         Scheduler.generateStudySchedule(restTime, topicTime, maxFocusTime, topics, endDateStr);
     }
 }
+/*
+Introduction to Physics, Units and Measurements,       
+            Motion in One Dimension,
+            Motion in Two and Three Dimensions,
+            Newton's Laws of Motion,
+            Work, Energy, and Power,
+            Conservation of Energy and Momentum,
+            Rotational Motion and Angular Momentum,
+            Oscillations and Waves,
+            Sound Waves and Acoustics,
+            Electric Charge and Electric Field,
+            Gauss's Law and Electric Potential,
+            Electric Current and Resistance,
+            Magnetic Fields and Forces
+*/
